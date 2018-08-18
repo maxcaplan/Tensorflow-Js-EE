@@ -3,7 +3,7 @@
     <app-navbar></app-navbar>
     <app-info></app-info>
     <app-predict></app-predict>
-    <app-train></app-train>
+    <app-newmodel></app-newmodel>
     <!-- <router-view/> -->
     <app-footer></app-footer>
   </div>
@@ -13,7 +13,7 @@
 import Navbar from "./components/NavBar.vue";
 import Footer from "./components/Footer.vue";
 import Info from "./components/Info.vue";
-import Train from "./components/Train.vue";
+import NewModel from "./components/NewModel.vue";
 import Predict from "./components/DrawPredict.vue";
 // import Home from "./components/Main/Home.vue";
 
@@ -22,7 +22,7 @@ export default {
     "app-navbar": Navbar,
     "app-footer": Footer,
     "app-info": Info,
-    "app-train": Train,
+    "app-newmodel": NewModel,
     "app-predict": Predict
     // "app-home": Home
   }
