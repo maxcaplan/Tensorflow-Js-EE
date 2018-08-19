@@ -10,7 +10,7 @@
             </div>
             <div class="row mb-3">
               <div class="col">
-                <button class="btn btn-primary" :class="{active: training}" @click.prevent="train()">
+                <button class="btn btn-primary" :class="{active: training}" @click.prevent="train(lChart, aChart)">
                   Train
                 </button>
               </div>
@@ -41,7 +41,9 @@ export default {
     return {
       training: false,
       loss: null,
-      accuracy: null
+      accuracy: null,
+      lChart: null,
+      aChart: null
     };
   },
   mounted() {
@@ -65,7 +67,18 @@ export default {
       },
 
       // Configuration options go here
-      options: {}
+      options: {
+        scales: {
+          xAxes: [
+            {
+              ticks: {
+                autoSkip: true,
+                autoSkipPadding: 10
+              }
+            }
+          ]
+        }
+      }
     });
 
     var aCtx = document.getElementById("accuracy").getContext("2d");
@@ -78,7 +91,7 @@ export default {
         labels: [],
         datasets: [
           {
-            label: "Percent%",
+            label: "Accuracy",
             fill: false,
             backgroundColor: "rgb(56, 145, 166)",
             borderColor: "rgb(56, 145, 166)",
@@ -88,15 +101,29 @@ export default {
       },
 
       // Configuration options go here
-      options: {}
+      options: {
+        scales: {
+          xAxes: [
+            {
+              ticks: {
+                autoSkip: true,
+                autoSkipPadding: 10
+              }
+            }
+          ]
+        }
+      }
     });
+
+    this.lChart = lChart;
+    this.aChart = aChart;
   },
   methods: {
-    train() {
-      this.training = true
+    train(lChart, aChart) {
+      this.training = true;
 
-      var loss
-      var accuracy
+      var loss;
+      var accuracy;
 
       let data;
       async function load() {
@@ -106,18 +133,36 @@ export default {
 
       async function train() {
         var returnedValues = await model.train(data);
-        loss = returnedValues[0]
-        accuracy = returnedValues[1]
-        console.log(loss)
+        loss = returnedValues[0];
+        accuracy = returnedValues[1];
       }
 
-      const that = this
+      const that = this;
       async function mnist() {
         await load();
         await train();
-        that.loss = loss
-        that.accuracy = accuracy
-        that.training = false
+        that.loss = loss;
+        that.accuracy = accuracy;
+        that.training = false;
+
+        //update charts
+        for (let i = 0; i < loss.length; i++) {
+          lChart.data.labels.push(loss[i].batch);
+
+          lChart.data.datasets.forEach(dataset => {
+            dataset.data.push(loss[i].loss);
+          });
+          lChart.update();
+        }
+
+        for (let j = 0; j < accuracy.length; j++) {
+          aChart.data.labels.push(accuracy[j].batch);
+
+          aChart.data.datasets.forEach(dataset => {
+            dataset.data.push(accuracy[j].accuracy * 100);
+          });
+          aChart.update();
+        }
       }
       mnist();
     }
