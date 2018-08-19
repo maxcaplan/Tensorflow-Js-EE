@@ -10,7 +10,7 @@
             </div>
             <div class="row mb-3">
               <div class="col">
-                <button class="btn btn-warning" :class="{active: training}" @click.prevent="train()">
+                <button class="btn btn-primary" :class="{active: training}" @click.prevent="train()">
                   Train
                 </button>
               </div>
@@ -39,7 +39,9 @@ import * as model from "../../src/scripts/model.js";
 export default {
   data() {
     return {
-      training: false
+      training: false,
+      loss: null,
+      accuracy: null
     };
   },
   mounted() {
@@ -50,14 +52,14 @@ export default {
 
       // The data for our dataset
       data: {
-        labels: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
+        labels: [],
         datasets: [
           {
             label: "Loss",
             fill: false,
             backgroundColor: "rgb(255, 99, 132)",
             borderColor: "rgb(255, 99, 132)",
-            data: [100,95,80,70,55,40,25,10,3,2]
+            data: []
           }
         ]
       },
@@ -73,14 +75,14 @@ export default {
 
       // The data for our dataset
       data: {
-        labels: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
+        labels: [],
         datasets: [
           {
             label: "Percent%",
             fill: false,
             backgroundColor: "rgb(56, 145, 166)",
             borderColor: "rgb(56, 145, 166)",
-            data: [0, 10, 15, 15, 25, 30, 40, 60, 85, 96]
+            data: []
           }
         ]
       },
@@ -91,6 +93,11 @@ export default {
   },
   methods: {
     train() {
+      this.training = true
+
+      var loss
+      var accuracy
+
       let data;
       async function load() {
         data = new MnistData();
@@ -98,12 +105,19 @@ export default {
       }
 
       async function train() {
-        await model.train(data);
+        var returnedValues = await model.train(data);
+        loss = returnedValues[0]
+        accuracy = returnedValues[1]
+        console.log(loss)
       }
 
+      const that = this
       async function mnist() {
         await load();
         await train();
+        that.loss = loss
+        that.accuracy = accuracy
+        that.training = false
       }
       mnist();
     }

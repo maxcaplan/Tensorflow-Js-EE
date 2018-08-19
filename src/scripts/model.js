@@ -76,33 +76,89 @@ const TEST_BATCH_SIZE = 1000;
 const TEST_ITERATION_FREQUENCY = 5;
 
 //training loop:
+// export async function train(data) {
+//   for (let i = 0; i < TRAIN_BATCHES; i++) {
+//     //data broken into batches for gpu parallelization and averaging
+//     const batch = data.nextTrainBatch(BATCH_SIZE)
+
+//     let testBatch;
+//     let validationData
+
+//     //check accuracy based on test images every 5 steps
+//     if (i % TEST_ITERATION_FREQUENCY === 0) {
+//       testBatch = data.nextTestBatch(TEST_BATCH_SIZE);
+//       validationData = [
+//         testBatch.xs.reshape([TEST_BATCH_SIZE, 28, 28, 1]), testBatch.labels
+//       ];
+//     }
+
+//     const history = await model.fit(
+//       batch.xs.reshape([BATCH_SIZE, 28, 28, 1]), //reshapes data from vector to 2d tensor
+//       batch.labels, { //labels batch
+//         batchSize: BATCH_SIZE,
+//         validationData,
+//         epochs: 1 //how many times the batch is run through the ANN
+//       });
+
+//     const loss = history.history.loss[0];
+//     const accuracy = history.history.acc[0];
+
+//     console.log("loss: " + loss + ", accuracy: " + accuracy)
+//   }
+// }
+
 export async function train(data) {
+
+  // We'll keep a buffer of loss and accuracy values over time.
+  const lossValues = [];
+  const accuracyValues = [];
+
+  // Iteratively train our model on mini-batches of data.
   for (let i = 0; i < TRAIN_BATCHES; i++) {
-    //data broken into batches for gpu parallelization and averaging
-    const batch = data.nextTrainBatch(BATCH_SIZE)
+    const [batch, validationData] = tf.tidy(() => {
+      const batch = data.nextTrainBatch(BATCH_SIZE);
+      batch.xs = batch.xs.reshape([BATCH_SIZE, 28, 28, 1]);
 
-    let testBatch;
-    let validationData
+      let validationData;
+      // Every few batches test the accuracy of the model.
+      if (i % TEST_ITERATION_FREQUENCY === 0) {
+        const testBatch = data.nextTestBatch(TEST_BATCH_SIZE);
+        validationData = [
+          // Reshape the training data from [64, 28x28] to [64, 28, 28, 1] so
+          // that we can feed it to our convolutional neural net.
+          testBatch.xs.reshape([TEST_BATCH_SIZE, 28, 28, 1]), testBatch.labels
+        ];
+      }
+      return [batch, validationData];
+    });
 
-    //check accuracy based on test images every 5 steps
-    if (i % TEST_ITERATION_FREQUENCY === 0) {
-      testBatch = data.nextTestBatch(TEST_BATCH_SIZE);
-      validationData = [
-        testBatch.xs.reshape([TEST_BATCH_SIZE, 28, 28, 1]), testBatch.labels
-      ];
-    }
-
+    // The entire dataset doesn't fit into memory so we call train repeatedly
+    // with batches using the fit() method.
     const history = await model.fit(
-      batch.xs.reshape([BATCH_SIZE, 28, 28, 1]), //reshapes data from vector to 2d tensor
-      batch.labels, { //labels batch
-        batchSize: BATCH_SIZE,
-        validationData,
-        epochs: 1 //how many times the batch is run through the ANN
-      });
+        batch.xs, batch.labels,
+        {batchSize: BATCH_SIZE, validationData, epochs: 1});
 
     const loss = history.history.loss[0];
     const accuracy = history.history.acc[0];
 
-    console.log("loss: " + loss + ", accuracy: " + accuracy)
+    console.log("Loss: " + loss + ", Accuracy: " + accuracy)
+
+    // Plot loss / accuracy.
+    lossValues.push({'batch': i, 'loss': loss, 'set': 'train'});
+
+    if (validationData != null) {
+      accuracyValues.push({'batch': i, 'accuracy': accuracy, 'set': 'train'});
+    }
+
+    // Call dispose on the training/test tensors to free their GPU memory.
+    tf.dispose([batch, validationData]);
+
+    // tf.nextFrame() returns a promise that resolves at the next call to
+    // requestAnimationFrame(). By awaiting this promise we keep our model
+    // training from blocking the main UI thread and freezing the browser.
+    await tf.nextFrame();
   }
+
+  // console.log("Loss Values: " + lossValues + " Accuracy Values: " + accuracyValues)
+  return[lossValues, accuracyValues]
 }
