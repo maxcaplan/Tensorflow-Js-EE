@@ -2,6 +2,12 @@
     <div class="container">
         <div class="card bg-light my-3">
           <div class="card-body my-5">
+            <div class="row d-flex justify-content-center">
+              <h1 class="card-title">Browser Model</h1>
+            </div>
+            <div class="row d-flex justify-content-center">
+              <p class="text-muted"><i>An ANN model trained live in the browser</i></p>
+            </div>
             <div class="row mb-3">
               <div class="col">
                 <button class="btn btn-warning" :class="{active: training}" @click.prevent="train()">
