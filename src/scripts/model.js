@@ -69,45 +69,14 @@ model.compile({
   metrics: ['accuracy']
 })
 
-const BATCH_SIZE = 64;
-const TRAIN_BATCHES = 100;
+//const BATCH_SIZE = 64;
+//const TRAIN_BATCHES = 100;
 
 const TEST_BATCH_SIZE = 1000;
 const TEST_ITERATION_FREQUENCY = 5;
 
-//training loop:
-// export async function train(data) {
-//   for (let i = 0; i < TRAIN_BATCHES; i++) {
-//     //data broken into batches for gpu parallelization and averaging
-//     const batch = data.nextTrainBatch(BATCH_SIZE)
 
-//     let testBatch;
-//     let validationData
-
-//     //check accuracy based on test images every 5 steps
-//     if (i % TEST_ITERATION_FREQUENCY === 0) {
-//       testBatch = data.nextTestBatch(TEST_BATCH_SIZE);
-//       validationData = [
-//         testBatch.xs.reshape([TEST_BATCH_SIZE, 28, 28, 1]), testBatch.labels
-//       ];
-//     }
-
-//     const history = await model.fit(
-//       batch.xs.reshape([BATCH_SIZE, 28, 28, 1]), //reshapes data from vector to 2d tensor
-//       batch.labels, { //labels batch
-//         batchSize: BATCH_SIZE,
-//         validationData,
-//         epochs: 1 //how many times the batch is run through the ANN
-//       });
-
-//     const loss = history.history.loss[0];
-//     const accuracy = history.history.acc[0];
-
-//     console.log("loss: " + loss + ", accuracy: " + accuracy)
-//   }
-// }
-
-export async function train(data) {
+export async function train(data, BATCH_SIZE, TRAIN_BATCHES) {
 
   // We'll keep a buffer of loss and accuracy values over time.
   const lossValues = [];
