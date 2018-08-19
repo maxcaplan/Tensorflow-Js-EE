@@ -71,9 +71,21 @@ export default {
         scales: {
           xAxes: [
             {
+              scaleLabel: {
+                display: true,
+                labelString: "epoch"
+              },
               ticks: {
                 autoSkip: true,
                 autoSkipPadding: 10
+              }
+            }
+          ],
+          yAxes: [
+            {
+              scaleLabel: {
+                display: true,
+                labelString: "loss"
               }
             }
           ]
@@ -105,9 +117,21 @@ export default {
         scales: {
           xAxes: [
             {
+              scaleLabel: {
+                display: true,
+                labelString: "epoch"
+              },
               ticks: {
                 autoSkip: true,
                 autoSkipPadding: 10
+              }
+            }
+          ],
+          yAxes: [
+            {
+              scaleLabel: {
+                display: true,
+                labelString: "percentage"
               }
             }
           ]
