@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div>
     <app-navbar></app-navbar>
     <app-info></app-info>
     <app-predict></app-predict>

@@ -1,50 +1,60 @@
 <template>
     <div class="container">
-        <div class="card bg-light my-3">
-          <div class="card-body my-5">
-            <div class="row d-flex justify-content-center">
-              <h1 class="card-title">Browser Model</h1>
-            </div>
-            <div class="row d-flex justify-content-center">
-              <p class="text-muted"><i>An ANN model trained live in the browser</i></p>
-            </div>
+      <div class="card bg-light my-3">
+        <div class="card-body my-5">
+          <div class="row d-flex justify-content-center">
+            <h1 class="card-title">Browser Model</h1> 
+          </div>
+          <div class="row d-flex justify-content-center">
+            <p class="text-muted"><i>An ANN model trained live in the browser</i></p>
+          </div>
 
-            <form class="needs-validation" @submit.prevent="train(lChart, aChart)" v-if="!training">
-              <div class="form-row">
-                <div class="col mb-3">
-                  <label for="batchSize">Batch Size</label>
-                  <input type="text" class="form-control" id="batchSize" v-model="batchSize" required>
-                </div>
-                <div class="col mb-3">
-                  <label for="trainingBatches">Training Batches</label>
-                  <input type="text" class="form-control" id="trainingBatches" v-model="trainBatches" required>
-                </div>
-                <div class="col-auto mb-3 d-flex align-items-end">
-                  <button class="btn btn-primary" type="submit">Train</button>
-                </div>
+          <form class="needs-validation" @submit.prevent="train(lChart, aChart)" v-if="!training">
+            <div class="form-row">
+              <div class="col mb-3">
+                <label for="batchSize">Batch Size</label>
+                <input type="text" class="form-control" id="batchSize" v-model="batchSize" required>
               </div>
-            </form>
-
-            <div class="spinner my-3" v-if="training">
-              <div class="rect1"></div>
-              <div class="rect2"></div>
-              <div class="rect3"></div>
-              <div class="rect4"></div>
-              <div class="rect5"></div>
+              <div class="col mb-3">
+                <label for="trainingBatches">Training Batches</label>
+                <input type="text" class="form-control" id="trainingBatches" v-model="trainBatches" required>
+              </div>
+              <div class="col-auto mb-3 d-flex align-items-end">
+                <button class="btn btn-primary" type="submit">Train</button>
+              </div>
             </div>
+          </form>
 
-            <div class="row">
-              <div class="col">
-                <h3>Loss</h3>
-                <canvas id="loss"></canvas>
-              </div>
-              <div class="col">
-                <h3>Accuracy</h3>
-                <canvas id="accuracy"></canvas>
-              </div>
+          <div class="spinner my-3" v-if="training">
+            <div class="rect1"></div>
+            <div class="rect2"></div>
+            <div class="rect3"></div>
+            <div class="rect4"></div>
+            <div class="rect5"></div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col">
+              <h3>Loss</h3>
+              <canvas id="loss"></canvas>
+            </div>
+            <div class="col">
+              <h3>Accuracy</h3>
+              <canvas id="accuracy"></canvas>
+            </div>
+          </div>
+          <hr>
+
+          <div class="row d-flex justify-content-center mb-3">
+            <h2>Predict</h2>
+          </div>
+          <div class="row">
+            <div class="col">
+              <vue-p5 class="draw" @setup="setup" @mousedragged="mouseDragged" @mousereleased="mouseReleased"></vue-p5>
             </div>
           </div>
         </div>
+      </div>
     </div>
 </template>
 
@@ -52,7 +62,12 @@
 import * as tf from "@tensorflow/tfjs";
 import { MnistData } from "../../src/scripts/data.js";
 import * as model from "../../src/scripts/model.js";
+import VueP5 from "vue-p5";
+
 export default {
+  components: {
+    "vue-p5": VueP5
+  },
   data() {
     return {
       training: false,
@@ -61,7 +76,9 @@ export default {
       lChart: null,
       aChart: null,
       batchSize: 64,
-      trainBatches: 100
+      trainBatches: 100,
+      bits: "",
+      prediction: null
     };
   },
   mounted() {
@@ -160,6 +177,10 @@ export default {
     this.lChart = lChart;
     this.aChart = aChart;
   },
+
+  watch: {
+    bits: "predict"
+  },
   methods: {
     train(lChart, aChart) {
       this.training = true;
@@ -212,12 +233,69 @@ export default {
         }
       }
       mnist();
+    },
+    predict() {
+      console.log("predict");
+      let result = model.predict(this.bits);
+      let largest = Math.max.apply(Math, result);
+
+      let prediction = -1
+      let index = 0
+
+      while (prediction == -1 || index > 9) {
+        if (result[index] >= largest) {
+          prediction = index
+        } else {
+          index++
+        }
+      }
+
+      console.log(prediction)
+    },
+
+    //p5js methods
+    setup(sketch) {
+      const size = 28 * 8;
+
+      sketch.pixelDensity(1 / 8);
+      sketch.createCanvas(size, size);
+      sketch.background("white");
+    },
+    mouseDragged(sketch) {
+      sketch.strokeWeight(20);
+      sketch.stroke("#292A2C");
+      sketch.line(sketch.pmouseX, sketch.pmouseY, sketch.mouseX, sketch.mouseY);
+    },
+    mouseReleased(sketch) {
+      if (sketch.mouseY < 28 * 28 + 1 && sketch.mouseX < 28 * 28 + 1) {
+        sketch.loadPixels();
+        let bits = [];
+
+        for (var i = 1; i < sketch.pixels.length; i += 4) {
+          if (sketch.pixels[i] <= 42) {
+            bits.push(1);
+          } else {
+            bits.push(0);
+          }
+        }
+
+        this.cacheVector(bits);
+      }
+    },
+    cacheVector(bits) {
+      this.bits = bits;
     }
   }
 };
 </script>
 
 <style scoped>
+#draw {
+  width: 280px;
+  height: 280px;
+  border: 1px solid lightgrey;
+}
+
 .spinner {
   margin: 100px auto;
   width: 50px;

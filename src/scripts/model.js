@@ -104,8 +104,11 @@ export async function train(data, BATCH_SIZE, TRAIN_BATCHES) {
     // The entire dataset doesn't fit into memory so we call train repeatedly
     // with batches using the fit() method.
     const history = await model.fit(
-        batch.xs, batch.labels,
-        {batchSize: BATCH_SIZE, validationData, epochs: 1});
+      batch.xs, batch.labels, {
+        batchSize: BATCH_SIZE,
+        validationData,
+        epochs: 1
+      });
 
     const loss = history.history.loss[0];
     const accuracy = history.history.acc[0];
@@ -113,10 +116,18 @@ export async function train(data, BATCH_SIZE, TRAIN_BATCHES) {
     console.log("Loss: " + loss + ", Accuracy: " + accuracy)
 
     // Plot loss / accuracy.
-    lossValues.push({'batch': i, 'loss': loss, 'set': 'train'});
+    lossValues.push({
+      'batch': i,
+      'loss': loss,
+      'set': 'train'
+    });
 
     if (validationData != null) {
-      accuracyValues.push({'batch': i, 'accuracy': accuracy, 'set': 'train'});
+      accuracyValues.push({
+        'batch': i,
+        'accuracy': accuracy,
+        'set': 'train'
+      });
     }
 
     // Call dispose on the training/test tensors to free their GPU memory.
@@ -129,5 +140,19 @@ export async function train(data, BATCH_SIZE, TRAIN_BATCHES) {
   }
 
   // console.log("Loss Values: " + lossValues + " Accuracy Values: " + accuracyValues)
-  return[lossValues, accuracyValues]
+  return [lossValues, accuracyValues]
+}
+
+
+// **WIP**
+export function predict(data) {
+  //convert data to tensor
+  var dataTensor = tf.tensor(data)
+  dataTensor = dataTensor.reshape([1, 28, 28, 1])
+
+  //make prediction
+  var prediction = model.predict(dataTensor)
+
+  //return prediction
+  return (prediction.dataSync())
 }
