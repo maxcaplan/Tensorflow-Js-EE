@@ -13,8 +13,9 @@ model.add(
     filters: 8, //number of filter windows of kernalSize
     strides: 1, //step size of sliding window
     activation: "relu", //rectified linear unit
-    kernelInitializer: "VarianceScaling" //random initallizing weights
-  })
+    kernelInitializer: "VarianceScaling", //random initallizing weights
+    name: "conv1"
+  }),
 );
 
 //2nd layer: max pooling layer
@@ -22,7 +23,8 @@ model.add(
 model.add(
   tf.layers.maxPooling2d({
     poolSize: [2, 2], //2x2 pooling window
-    strides: [2, 2] //moves 2 pixels horizontal and 2 pixels vertical
+    strides: [2, 2], //moves 2 pixels horizontal and 2 pixels vertical
+    name: "pool1"
   })
 );
 
@@ -34,7 +36,8 @@ model.add(
     filters: 16, //double the amount of filters
     strides: 1,
     activation: "relu",
-    kernelInitializer: "VarianceScaling"
+    kernelInitializer: "VarianceScaling",
+    name: "conv2"
   })
 );
 
@@ -42,7 +45,8 @@ model.add(
 model.add(
   tf.layers.maxPooling2d({
     poolSize: [2, 2],
-    strides: [2, 2]
+    strides: [2, 2],
+    name: "pool2"
   })
 );
 
@@ -54,7 +58,8 @@ model.add(
   tf.layers.dense({
     units: 10, //10 outpu nodes for 0-9
     kernelInitializer: "VarianceScaling",
-    activation: "softmax" //normalizes vector into probability distrobution
+    activation: "softmax", //normalizes vector into probability distrobution
+    name: "output"
   })
 );
 
@@ -139,8 +144,9 @@ export async function train(data, BATCH_SIZE, TRAIN_BATCHES) {
     await tf.nextFrame();
   }
 
+  let layers = [model.getLayer("conv1"),model.getLayer("pool1"),model.getLayer("conv2"),model.getLayer("pool2"),model.getLayer("output")]
   // console.log("Loss Values: " + lossValues + " Accuracy Values: " + accuracyValues)
-  return [lossValues, accuracyValues]
+  return [lossValues, accuracyValues, layers]
 }
 
 

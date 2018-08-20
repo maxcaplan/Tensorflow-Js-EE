@@ -86,7 +86,8 @@ export default {
       batchSize: 64,
       trainBatches: 100,
       bits: "",
-      prediction: null
+      prediction: null,
+      modelSum: null
     };
   },
   mounted() {
@@ -197,6 +198,7 @@ export default {
 
       var loss;
       var accuracy;
+      var summary;
 
       let data;
       async function load() {
@@ -212,6 +214,7 @@ export default {
         );
         loss = returnedValues[0];
         accuracy = returnedValues[1];
+        summary = returnedValues[2];
       }
 
       async function mnist() {
@@ -219,6 +222,7 @@ export default {
         await train();
         that.loss = loss;
         that.accuracy = accuracy;
+        that.modelSum = summary;
         that.training = false;
 
         //update charts
@@ -285,8 +289,8 @@ export default {
           let b = sketch.pixels[i + 2];
 
           let value = (r + g + b) / 3 / 255;
-          
-          bits.push(value)
+
+          bits.push(value);
         }
 
         this.cacheVector(bits);
