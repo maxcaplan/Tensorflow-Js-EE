@@ -49,8 +49,16 @@
             <h2>Predict</h2>
           </div>
           <div class="row">
-            <div class="col">
-              <vue-p5 class="draw" @setup="setup" @mousedragged="mouseDragged" @mousereleased="mouseReleased"></vue-p5>
+            <div class="col ml-3">
+              <div class="row">
+                <vue-p5 class="draw" @setup="setup" @mousedragged="mouseDragged" @mousereleased="mouseReleased" @keypressed="keyPressed"></vue-p5>
+              </div>
+              <div class="row">
+                <i class="text-muted">press "C" to clear</i>
+              </div>
+            </div>
+            <div class="col d-flex justify-content-center align-items-center">
+              <h1 id="prediction" style="font-size:200px">{{ prediction }}</h1>
             </div>
           </div>
         </div>
@@ -239,18 +247,18 @@ export default {
       let result = model.predict(this.bits);
       let largest = Math.max.apply(Math, result);
 
-      let prediction = -1
-      let index = 0
+      let prediction = -1;
+      let index = 0;
 
       while (prediction == -1 || index > 9) {
         if (result[index] >= largest) {
-          prediction = index
+          prediction = index;
         } else {
-          index++
+          index++;
         }
       }
 
-      console.log(prediction)
+      this.prediction = prediction
     },
 
     //p5js methods
@@ -282,6 +290,12 @@ export default {
         this.cacheVector(bits);
       }
     },
+    keyPressed(sketch) {
+      // console.log("Key" + sketch.keyCode + "is pressed")
+      if (sketch.keyCode == 67) {
+        sketch.background("white")
+      }
+    },
     cacheVector(bits) {
       this.bits = bits;
     }
@@ -294,6 +308,10 @@ export default {
   width: 280px;
   height: 280px;
   border: 1px solid lightgrey;
+}
+
+.prediction {
+  font-size:10px
 }
 
 .spinner {
