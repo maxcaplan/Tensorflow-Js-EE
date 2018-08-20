@@ -258,7 +258,7 @@ export default {
         }
       }
 
-      this.prediction = prediction
+      this.prediction = prediction;
     },
 
     //p5js methods
@@ -267,11 +267,11 @@ export default {
 
       sketch.pixelDensity(1 / 8);
       sketch.createCanvas(size, size);
-      sketch.background("white");
+      sketch.background("black");
     },
     mouseDragged(sketch) {
       sketch.strokeWeight(20);
-      sketch.stroke("#292A2C");
+      sketch.stroke("white");
       sketch.line(sketch.pmouseX, sketch.pmouseY, sketch.mouseX, sketch.mouseY);
     },
     mouseReleased(sketch) {
@@ -279,12 +279,14 @@ export default {
         sketch.loadPixels();
         let bits = [];
 
-        for (var i = 1; i < sketch.pixels.length; i += 4) {
-          if (sketch.pixels[i] <= 42) {
-            bits.push(1);
-          } else {
-            bits.push(0);
-          }
+        for (var i = 0; i < sketch.pixels.length; i += 4) {
+          let r = sketch.pixels[i];
+          let g = sketch.pixels[i + 1];
+          let b = sketch.pixels[i + 2];
+
+          let value = (r + g + b) / 3 / 255;
+          
+          bits.push(value)
         }
 
         this.cacheVector(bits);
@@ -293,7 +295,7 @@ export default {
     keyPressed(sketch) {
       // console.log("Key" + sketch.keyCode + "is pressed")
       if (sketch.keyCode == 67) {
-        sketch.background("white")
+        sketch.background("blackc");
       }
     },
     cacheVector(bits) {
@@ -311,7 +313,7 @@ export default {
 }
 
 .prediction {
-  font-size:10px
+  font-size: 10px;
 }
 
 .spinner {
