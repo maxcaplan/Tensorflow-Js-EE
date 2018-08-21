@@ -48,17 +48,34 @@
           <div class="row d-flex justify-content-center mb-3">
             <h2>Predict</h2>
           </div>
-          <div class="row">
-            <div class="col ml-3">
-              <div class="row">
-                <vue-p5 class="draw" @setup="setup" @mousedragged="mouseDragged" @mousereleased="mouseReleased" @keypressed="keyPressed"></vue-p5>
-              </div>
-              <div class="row">
-                <i class="text-muted">press "C" to clear</i>
+          <div class="row d-flex align-items-center">
+
+            <!-- drawing canvas -->
+            <div class="col">
+              <vue-p5 class="draw" @setup="setup" @mousedragged="mouseDragged" @mousereleased="mouseReleased" @keypressed="keyPressed"></vue-p5>
+            </div>
+
+            <div class="col-auto d-flex align-items-center"><i class="fas fa-angle-right fa-8x text-warning"></i></div>
+
+            <!-- Graph of output array -->
+            <div class="col d-flex justify-content-center align-items-center">
+              <canvas id="predictionGraph"></canvas>
+            </div>
+
+            <div class="col-auto d-flex align-items-center"><i class="fas fa-angle-right fa-8x text-warning"></i></div>
+
+            <!-- final prediction -->
+            <div class="col d-flex text-center justify-content-center align-items-center">
+              <div id="prediction">
+                <h1 style="font-size:200px">{{ prediction }}</h1>
               </div>
             </div>
-            <div class="col d-flex justify-content-center align-items-center">
-              <h1 id="prediction" style="font-size:200px">{{ prediction }}</h1>
+
+          </div>
+
+          <div class="row">
+            <div class="col">
+              <i class="text-muted">press "C" to clear</i>
             </div>
           </div>
         </div>
@@ -83,10 +100,12 @@ export default {
       accuracy: null,
       lChart: null,
       aChart: null,
+      pChart: null,
       batchSize: 64,
       trainBatches: 100,
       bits: "",
-      prediction: null,
+      prediction: "",
+      predictions: "",
       modelSum: null
     };
   },
@@ -183,13 +202,47 @@ export default {
       }
     });
 
+    var colours = [];
+
+    for (let i = 0; i < 10; i++) {
+      colours.push(
+        "rgb(" + 150 + "," + Math.round(Math.random() * 255) + "," + 255 + ")"
+      );
+    }
+
+    var pCtx = document.getElementById("predictionGraph").getContext("2d");
+    var pChart = new Chart(pCtx, {
+      type: "doughnut",
+
+      data: {
+        datasets: [
+          {
+            data: [1],
+            backgroundColor: colours
+          }
+        ],
+
+        // These labels appear in the legend and in the tooltips when hovering different arcs
+        labels: ["prediction"]
+      },
+
+      options: {
+        legend: {
+          display: false
+        }
+      }
+    });
+
+    this.pChart = pChart;
     this.lChart = lChart;
     this.aChart = aChart;
   },
 
   watch: {
-    bits: "predict"
+    bits: "predict",
+    predictions: "predictionChartUpdate"
   },
+
   methods: {
     train(lChart, aChart) {
       this.training = true;
@@ -262,7 +315,54 @@ export default {
         }
       }
 
+      this.predictions = Array.prototype.slice.call(result);
       this.prediction = prediction;
+    },
+
+    predictionChartUpdate() {
+      this.pChart.destroy();
+
+      var colours = [];
+      var data = [];
+
+      for (let i = 0; i < this.predictions.length; i++) {
+        colours.push(
+          "rgb(" + 150 + "," + Math.round(Math.random() * 255) + "," + 255 + ")"
+        );
+      }
+
+      
+
+      for (let i = 0; i < this.predictions.length; i++) {
+        data.push(this.predictions[i] * 100);
+      }
+
+      console.log(data)
+
+      var ctx = document.getElementById("predictionGraph").getContext("2d");
+      var chart = new Chart(ctx, {
+        type: "doughnut",
+
+        data: {
+          datasets: [
+            {
+              data: data,
+              backgroundColor: colours
+            }
+          ],
+
+          // These labels appear in the legend and in the tooltips when hovering different arcs
+          labels: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+        },
+
+        options: {
+          legend: {
+            display: false
+          }
+        }
+      });
+
+      this.pChart = chart;
     },
 
     //p5js methods
@@ -297,9 +397,8 @@ export default {
       }
     },
     keyPressed(sketch) {
-      // console.log("Key" + sketch.keyCode + "is pressed")
       if (sketch.keyCode == 67) {
-        sketch.background("blackc");
+        sketch.background("black");
       }
     },
     cacheVector(bits) {
@@ -311,14 +410,23 @@ export default {
 
 <style scoped>
 #draw {
-  width: 280px;
-  height: 280px;
+  width: 224px;
+  height: 224px;
   border: 1px solid lightgrey;
 }
 
-.prediction {
-  font-size: 10px;
+#prediction {
+  width: 224px;
+  height: 224px;
+  border: 1px solid lightgray;
+  border-radius: 4px;
+  background-color: white;
 }
+
+/* #predictionGraph {
+  max-width: 100%;
+  max-height: 100%;
+} */
 
 .spinner {
   margin: 100px auto;
