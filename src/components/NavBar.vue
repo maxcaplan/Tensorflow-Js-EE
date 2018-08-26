@@ -10,14 +10,14 @@
 
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav">
-        <li class="nav-item active">
-          <a class="nav-link" href="#">Info <span class="sr-only">(current)</span></a>
+        <li class="nav-item">
+          <a class="nav-link" href="#" v-scroll-to="'#info'">Info</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#">Predict</a>
+          <a class="nav-link" href="#" v-scroll-to="'#transfer'">Transfer Learning</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#">Train</a>
+          <a class="nav-link" href="#" v-scroll-to="'#newModel'">Browser Model</a>
         </li>
       </ul>
     </div>

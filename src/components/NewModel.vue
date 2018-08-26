@@ -33,6 +33,10 @@
             <div class="rect5"></div>
           </div>
 
+          <div v-if="training == true" class="row d-flex justify-content-center">
+            <p class="text-muted">{{trainingMsg}}</p>
+          </div>
+
           <div class="row mb-3">
             <div class="col">
               <h3>Loss</h3>
@@ -96,6 +100,7 @@ export default {
   data() {
     return {
       training: false,
+      trainingMsg: "",
       loss: null,
       accuracy: null,
       lChart: null,
@@ -246,6 +251,7 @@ export default {
   methods: {
     train(lChart, aChart) {
       this.training = true;
+      this.trainingMsg = "";
 
       const that = this;
 
@@ -271,7 +277,9 @@ export default {
       }
 
       async function mnist() {
+        that.trainingMsg = "Loading training data...";
         await load();
+        that.trainingMsg = "Training model...";
         await train();
         that.loss = loss;
         that.accuracy = accuracy;
@@ -279,6 +287,7 @@ export default {
         that.training = false;
 
         //update charts
+        that.trainingMsg = "Updating charts...";
         for (let i = 0; i < loss.length; i++) {
           lChart.data.labels.push(loss[i].batch);
 
@@ -296,6 +305,8 @@ export default {
           });
           aChart.update();
         }
+
+        that.trainingMsg = "";
       }
       mnist();
     },
@@ -331,13 +342,11 @@ export default {
         );
       }
 
-      
-
       for (let i = 0; i < this.predictions.length; i++) {
         data.push(this.predictions[i] * 100);
       }
 
-      console.log(data)
+      console.log(data);
 
       var ctx = document.getElementById("predictionGraph").getContext("2d");
       var chart = new Chart(ctx, {
@@ -374,12 +383,32 @@ export default {
       sketch.background("black");
     },
     mouseDragged(sketch) {
-      sketch.strokeWeight(20);
-      sketch.stroke("white");
-      sketch.line(sketch.pmouseX, sketch.pmouseY, sketch.mouseX, sketch.mouseY);
+      if (
+        sketch.mouseY < sketch.height &&
+        sketch.mouseX < sketch.width &&
+        sketch.mouseX > 0 &&
+        sketch.mouseY > 0
+      ) {
+        console.log(sketch.mouseX + ", " + sketch.mouseY);
+        sketch.strokeWeight(20);
+        sketch.stroke("white");
+        sketch.line(
+          sketch.pmouseX,
+          sketch.pmouseY,
+          sketch.mouseX,
+          sketch.mouseY
+        );
+      }
     },
     mouseReleased(sketch) {
-      if (sketch.mouseY < 28 * 28 + 1 && sketch.mouseX < 28 * 28 + 1) {
+      if (
+        sketch.mouseY < sketch.height &&
+        sketch.mouseX < sketch.width &&
+        sketch.mouseX > 0 &&
+        sketch.mouseY > 0
+      ) {
+        console.log(sketch.mouseX + ", " + sketch.mouseY);
+
         sketch.loadPixels();
         let bits = [];
 
@@ -423,10 +452,10 @@ export default {
   background-color: white;
 }
 
-/* #predictionGraph {
-  max-width: 100%;
-  max-height: 100%;
-} */
+#predictionGraph {
+  max-width: 224px;
+  max-height: 224px;
+}
 
 .spinner {
   margin: 100px auto;

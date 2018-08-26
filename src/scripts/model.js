@@ -50,7 +50,7 @@ model.add(
   })
 );
 
-//5th layer: flattens output from previous layer to vector
+//5th layer: flattens output from previous layer to tensor1d
 model.add(tf.layers.flatten());
 
 //6th layer: dense output layer
